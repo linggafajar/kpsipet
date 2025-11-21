@@ -1,4 +1,3 @@
-//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
 
 datasource db {
   provider = "postgresql"   // sesuaikan jika pakai PostgreSQL
