@@ -1,43 +1,52 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import AdminLayout from '@/app/components/admin/AdminLayout'
-import AdminHeader from '@/app/components/admin/AdminHeader'
-import LoadingSpinner from '@/app/components/ui/LoadingSpinner'
-import { Users, GraduationCap, UserCheck, FileText, Clock, CheckCircle, XCircle, CheckCheck } from 'lucide-react'
+import { useEffect, useState } from "react";
+import AdminLayout from "@/components/admin/AdminLayout";
+import AdminHeader from "@/components/admin/AdminHeader";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import {
+  Users,
+  GraduationCap,
+  UserCheck,
+  FileText,
+  Clock,
+  CheckCircle,
+  XCircle,
+  CheckCheck,
+} from "lucide-react";
 
 interface Stats {
-  totalUsers: number
-  totalGuru: number
-  totalSiswa: number
-  totalPengaduan: number
+  totalUsers: number;
+  totalGuru: number;
+  totalSiswa: number;
+  totalPengaduan: number;
   pengaduanByStatus: {
-    menunggu: number
-    disetujui: number
-    ditolak: number
-    selesai: number
-  }
+    menunggu: number;
+    disetujui: number;
+    ditolak: number;
+    selesai: number;
+  };
 }
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<Stats | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchStats()
-  }, [])
+    fetchStats();
+  }, []);
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/stats')
-      const data = await response.json()
-      setStats(data)
+      const response = await fetch("/api/stats");
+      const data = await response.json();
+      setStats(data);
     } catch (error) {
-      console.error('Failed to fetch stats:', error)
+      console.error("Failed to fetch stats:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -46,12 +55,12 @@ export default function AdminDashboard() {
           <LoadingSpinner size="lg" text="Loading dashboard..." />
         </div>
       </AdminLayout>
-    )
+    );
   }
 
   return (
     <AdminLayout>
-      <AdminHeader title="Dashboard Admin" subtitle="Ringkasan data sistem" />
+      <AdminHeader title="Dashboard Admin" />
 
       <div className="space-y-6">
         {/* Main Stats */}
@@ -84,7 +93,9 @@ export default function AdminDashboard() {
 
         {/* Pengaduan by Status */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Status Pengaduan</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Status Pengaduan
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatusCard
               title="Menunggu"
@@ -115,7 +126,9 @@ export default function AdminDashboard() {
 
         {/* Quick Actions */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Quick Actions
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <ActionButton
               title="Kelola Pengguna"
@@ -151,21 +164,26 @@ export default function AdminDashboard() {
         </div>
       </div>
     </AdminLayout>
-  )
+  );
 }
 
-function StatCard({ title, value, icon, color }: {
-  title: string
-  value: number
-  icon: React.ReactNode
-  color: 'blue' | 'green' | 'purple' | 'orange'
+function StatCard({
+  title,
+  value,
+  icon,
+  color,
+}: {
+  title: string;
+  value: number;
+  icon: React.ReactNode;
+  color: "blue" | "green" | "purple" | "orange";
 }) {
   const colors = {
-    blue: 'bg-blue-50 text-blue-600',
-    green: 'bg-green-50 text-green-600',
-    purple: 'bg-purple-50 text-purple-600',
-    orange: 'bg-orange-50 text-orange-600'
-  }
+    blue: "bg-blue-50 text-blue-600",
+    green: "bg-green-50 text-green-600",
+    purple: "bg-purple-50 text-purple-600",
+    orange: "bg-orange-50 text-orange-600",
+  };
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -174,26 +192,29 @@ function StatCard({ title, value, icon, color }: {
           <p className="text-sm font-medium text-gray-600">{title}</p>
           <p className="text-3xl font-bold text-gray-900 mt-2">{value}</p>
         </div>
-        <div className={`p-3 rounded-lg ${colors[color]}`}>
-          {icon}
-        </div>
+        <div className={`p-3 rounded-lg ${colors[color]}`}>{icon}</div>
       </div>
     </div>
-  )
+  );
 }
 
-function StatusCard({ title, value, icon, color }: {
-  title: string
-  value: number
-  icon: React.ReactNode
-  color: 'yellow' | 'blue' | 'red' | 'green'
+function StatusCard({
+  title,
+  value,
+  icon,
+  color,
+}: {
+  title: string;
+  value: number;
+  icon: React.ReactNode;
+  color: "yellow" | "blue" | "red" | "green";
 }) {
   const colors = {
-    yellow: 'bg-yellow-50 text-yellow-600 border-yellow-200',
-    blue: 'bg-blue-50 text-blue-600 border-blue-200',
-    red: 'bg-red-50 text-red-600 border-red-200',
-    green: 'bg-green-50 text-green-600 border-green-200'
-  }
+    yellow: "bg-yellow-50 text-yellow-600 border-yellow-200",
+    blue: "bg-blue-50 text-blue-600 border-blue-200",
+    red: "bg-red-50 text-red-600 border-red-200",
+    green: "bg-green-50 text-green-600 border-green-200",
+  };
 
   return (
     <div className={`rounded-lg border p-4 ${colors[color]}`}>
@@ -203,22 +224,27 @@ function StatusCard({ title, value, icon, color }: {
       </div>
       <p className="text-2xl font-bold">{value}</p>
     </div>
-  )
+  );
 }
 
-function ActionButton({ title, description, href, color }: {
-  title: string
-  description: string
-  href: string
-  color: 'blue' | 'green' | 'purple' | 'orange' | 'pink'
+function ActionButton({
+  title,
+  description,
+  href,
+  color,
+}: {
+  title: string;
+  description: string;
+  href: string;
+  color: "blue" | "green" | "purple" | "orange" | "pink";
 }) {
   const colors = {
-    blue: 'hover:border-blue-300 hover:bg-blue-50',
-    green: 'hover:border-green-300 hover:bg-green-50',
-    purple: 'hover:border-purple-300 hover:bg-purple-50',
-    orange: 'hover:border-orange-300 hover:bg-orange-50',
-    pink: 'hover:border-pink-300 hover:bg-pink-50'
-  }
+    blue: "hover:border-blue-300 hover:bg-blue-50",
+    green: "hover:border-green-300 hover:bg-green-50",
+    purple: "hover:border-purple-300 hover:bg-purple-50",
+    orange: "hover:border-orange-300 hover:bg-orange-50",
+    pink: "hover:border-pink-300 hover:bg-pink-50",
+  };
 
   return (
     <a
@@ -228,5 +254,5 @@ function ActionButton({ title, description, href, color }: {
       <h4 className="font-semibold text-gray-900">{title}</h4>
       <p className="text-sm text-gray-600 mt-1">{description}</p>
     </a>
-  )
+  );
 }

@@ -19,6 +19,19 @@ async function main() {
   })
   console.log('✅ Admin user created:', admin.username)
 
+  // Create guru user
+  const hashedPasswordGuru = await bcrypt.hash('guru123', 10)
+  const guruUser = await prisma.users.upsert({
+    where: { username: 'guru' },
+    update: {},
+    create: {
+      username: 'guru',
+      password: hashedPasswordGuru,
+      role: 'guru'
+    }
+  })
+  console.log('✅ Guru user created:', guruUser.username)
+
   // Create petugas user
   const hashedPasswordPetugas = await bcrypt.hash('petugas123', 10)
   const petugas = await prisma.users.upsert({

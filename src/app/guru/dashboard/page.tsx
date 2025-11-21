@@ -1,62 +1,67 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import GuruLayout from '@/app/components/guru/GuruLayout'
-import GuruHeader from '@/app/components/guru/GuruHeader'
-import LoadingSpinner from '@/app/components/ui/LoadingSpinner'
-import { FileText, Clock, CheckCircle, XCircle, Plus, Eye } from 'lucide-react'
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import GuruLayout from "@/components/guru/GuruLayout";
+import GuruHeader from "@/components/guru/GuruHeader";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { FileText, Clock, CheckCircle, XCircle, Plus, Eye } from "lucide-react";
 
 interface Pengaduan {
-  id_pengaduan: number
-  tgl_pengaduan: string
-  deskripsi_masalah: string
-  status_laporan: 'Menunggu' | 'Disetujui' | 'Ditolak' | 'Selesai'
+  id_pengaduan: number;
+  tgl_pengaduan: string;
+  deskripsi_masalah: string;
+  status_laporan: "Menunggu" | "Disetujui" | "Ditolak" | "Selesai";
   siswa: {
-    nama_siswa: string
-    kelas: string
-  }
+    nama_siswa: string;
+    kelas: string;
+  };
 }
 
 export default function GuruDashboard() {
-  const router = useRouter()
-  const [pengaduan, setPengaduan] = useState<Pengaduan[]>([])
-  const [loading, setLoading] = useState(true)
+  const router = useRouter();
+  const [pengaduan, setPengaduan] = useState<Pengaduan[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchPengaduan()
-  }, [])
+    fetchPengaduan();
+  }, []);
 
   const fetchPengaduan = async () => {
     try {
       // Simulasi fetch - nanti ganti dengan API real yang filter by guru
-      const response = await fetch('/api/pengaduan')
-      const data = await response.json()
+      const response = await fetch("/api/pengaduan");
+      const data = await response.json();
       // Ambil 5 pengaduan terakhir saja
-      setPengaduan(data.slice(0, 5))
+      setPengaduan(data.slice(0, 5));
     } catch (error) {
-      console.error('Failed to fetch pengaduan:', error)
+      console.error("Failed to fetch pengaduan:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const stats = {
     total: pengaduan.length,
-    menunggu: pengaduan.filter(p => p.status_laporan === 'Menunggu').length,
-    disetujui: pengaduan.filter(p => p.status_laporan === 'Disetujui').length,
-    selesai: pengaduan.filter(p => p.status_laporan === 'Selesai').length,
-  }
+    menunggu: pengaduan.filter((p) => p.status_laporan === "Menunggu").length,
+    disetujui: pengaduan.filter((p) => p.status_laporan === "Disetujui").length,
+    selesai: pengaduan.filter((p) => p.status_laporan === "Selesai").length,
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Menunggu': return 'bg-yellow-100 text-yellow-800'
-      case 'Disetujui': return 'bg-blue-100 text-blue-800'
-      case 'Ditolak': return 'bg-red-100 text-red-800'
-      case 'Selesai': return 'bg-green-100 text-green-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case "Menunggu":
+        return "bg-yellow-100 text-yellow-800";
+      case "Disetujui":
+        return "bg-blue-100 text-blue-800";
+      case "Ditolak":
+        return "bg-red-100 text-red-800";
+      case "Selesai":
+        return "bg-green-100 text-green-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -65,7 +70,7 @@ export default function GuruDashboard() {
           <LoadingSpinner size="lg" text="Loading dashboard..." />
         </div>
       </GuruLayout>
-    )
+    );
   }
 
   return (
@@ -75,7 +80,7 @@ export default function GuruDashboard() {
         subtitle="Selamat datang di portal pengaduan siswa"
         action={
           <button
-            onClick={() => router.push('/guru/pengaduan')}
+            onClick={() => router.push("/guru/pengaduan")}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-5 h-5" />
@@ -116,11 +121,15 @@ export default function GuruDashboard() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">Pengaduan Terakhir</h3>
-            <p className="text-sm text-gray-600">Daftar pengaduan yang baru dibuat</p>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Pengaduan Terakhir
+            </h3>
+            <p className="text-sm text-gray-600">
+              Daftar pengaduan yang baru dibuat
+            </p>
           </div>
           <button
-            onClick={() => router.push('/guru/riwayat')}
+            onClick={() => router.push("/guru/riwayat")}
             className="text-sm text-blue-600 hover:text-blue-700 font-medium"
           >
             Lihat Semua →
@@ -152,23 +161,29 @@ export default function GuruDashboard() {
               {pengaduan.map((p) => (
                 <tr key={p.id_pengaduan} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {new Date(p.tgl_pengaduan).toLocaleDateString('id-ID')}
+                    {new Date(p.tgl_pengaduan).toLocaleDateString("id-ID")}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <div>{p.siswa.nama_siswa}</div>
                     <div className="text-xs text-gray-500">{p.siswa.kelas}</div>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    <div className="max-w-xs truncate">{p.deskripsi_masalah}</div>
+                    <div className="max-w-xs truncate">
+                      {p.deskripsi_masalah}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(p.status_laporan)}`}>
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
+                        p.status_laporan
+                      )}`}
+                    >
                       {p.status_laporan}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <button
-                      onClick={() => router.push('/guru/riwayat')}
+                      onClick={() => router.push("/guru/riwayat")}
                       className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                       title="Lihat Detail"
                     >
@@ -185,7 +200,7 @@ export default function GuruDashboard() {
               <FileText className="w-12 h-12 mx-auto text-gray-400 mb-4" />
               <p className="text-gray-500">Belum ada pengaduan</p>
               <button
-                onClick={() => router.push('/guru/pengaduan')}
+                onClick={() => router.push("/guru/pengaduan")}
                 className="mt-4 text-blue-600 hover:text-blue-700 font-medium"
               >
                 Buat Pengaduan Pertama
@@ -195,21 +210,26 @@ export default function GuruDashboard() {
         </div>
       </div>
     </GuruLayout>
-  )
+  );
 }
 
-function StatCard({ title, value, icon, color }: {
-  title: string
-  value: number
-  icon: React.ReactNode
-  color: 'blue' | 'yellow' | 'green' | 'purple'
+function StatCard({
+  title,
+  value,
+  icon,
+  color,
+}: {
+  title: string;
+  value: number;
+  icon: React.ReactNode;
+  color: "blue" | "yellow" | "green" | "purple";
 }) {
   const colors = {
-    blue: 'bg-blue-50 text-blue-600',
-    yellow: 'bg-yellow-50 text-yellow-600',
-    green: 'bg-green-50 text-green-600',
-    purple: 'bg-purple-50 text-purple-600',
-  }
+    blue: "bg-blue-50 text-blue-600",
+    yellow: "bg-yellow-50 text-yellow-600",
+    green: "bg-green-50 text-green-600",
+    purple: "bg-purple-50 text-purple-600",
+  };
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -218,10 +238,8 @@ function StatCard({ title, value, icon, color }: {
           <p className="text-sm font-medium text-gray-600">{title}</p>
           <p className="text-3xl font-bold text-gray-900 mt-2">{value}</p>
         </div>
-        <div className={`p-3 rounded-lg ${colors[color]}`}>
-          {icon}
-        </div>
+        <div className={`p-3 rounded-lg ${colors[color]}`}>{icon}</div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,139 +1,151 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import AdminLayout from '@/app/components/admin/AdminLayout'
-import AdminHeader from '@/app/components/admin/AdminHeader'
-import Modal from '@/app/components/ui/Modal'
-import ConfirmDialog from '@/app/components/ui/ConfirmDialog'
-import LoadingSpinner from '@/app/components/ui/LoadingSpinner'
-import { ToastProvider, useToast } from '@/app/components/ui/ToastContainer'
-import { Plus, Eye, Pencil, Trash2, Search, FileText } from 'lucide-react'
+import { useEffect, useState } from "react";
+import AdminLayout from "@/components/admin/AdminLayout";
+import AdminHeader from "@/components/admin/AdminHeader";
+import Modal from "@/components/ui/Modal";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { ToastProvider, useToast } from "@/components/ui/ToastContainer";
+import { Plus, Eye, Pencil, Trash2, Search, FileText } from "lucide-react";
 
 interface Template {
-  id_template: number
-  nama_template: string
-  isi_template: string
+  id_template: number;
+  nama_template: string;
+  isi_template: string;
   _count?: {
-    tindak_lanjut: number
-  }
+    tindak_lanjut: number;
+  };
 }
 
 function TemplatePageContent() {
-  const [templates, setTemplates] = useState<Template[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
-  const [formData, setFormData] = useState({ nama_template: '', isi_template: '' })
-  const [submitting, setSubmitting] = useState(false)
-  const { showToast } = useToast()
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(
+    null
+  );
+  const [formData, setFormData] = useState({
+    nama_template: "",
+    isi_template: "",
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const { showToast } = useToast();
 
   useEffect(() => {
-    fetchTemplates()
-  }, [])
+    fetchTemplates();
+  }, []);
 
   const fetchTemplates = async () => {
     try {
-      const response = await fetch('/api/template')
-      const data = await response.json()
-      setTemplates(data)
+      const response = await fetch("/api/template");
+      const data = await response.json();
+      setTemplates(data);
     } catch (error) {
-      showToast('Failed to fetch templates', 'error')
+      showToast("Failed to fetch templates", "error");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSubmitting(true)
+    e.preventDefault();
+    setSubmitting(true);
 
     try {
-      const url = selectedTemplate ? `/api/template/${selectedTemplate.id_template}` : '/api/template'
-      const method = selectedTemplate ? 'PUT' : 'POST'
+      const url = selectedTemplate
+        ? `/api/template/${selectedTemplate.id_template}`
+        : "/api/template";
+      const method = selectedTemplate ? "PUT" : "POST";
 
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to save template')
+        throw new Error(data.error || "Failed to save template");
       }
 
       showToast(
-        selectedTemplate ? 'Template updated successfully' : 'Template created successfully',
-        'success'
-      )
-      setIsModalOpen(false)
-      fetchTemplates()
-      resetForm()
+        selectedTemplate
+          ? "Template updated successfully"
+          : "Template created successfully",
+        "success"
+      );
+      setIsModalOpen(false);
+      fetchTemplates();
+      resetForm();
     } catch (error: any) {
-      showToast(error.message, 'error')
+      showToast(error.message, "error");
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   const handleDelete = async () => {
-    if (!selectedTemplate) return
+    if (!selectedTemplate) return;
 
     try {
-      const response = await fetch(`/api/template/${selectedTemplate.id_template}`, {
-        method: 'DELETE'
-      })
+      const response = await fetch(
+        `/api/template/${selectedTemplate.id_template}`,
+        {
+          method: "DELETE",
+        }
+      );
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to delete template')
+        throw new Error(data.error || "Failed to delete template");
       }
 
-      showToast('Template deleted successfully', 'success')
-      fetchTemplates()
-      setSelectedTemplate(null)
+      showToast("Template deleted successfully", "success");
+      fetchTemplates();
+      setSelectedTemplate(null);
     } catch (error: any) {
-      showToast(error.message, 'error')
+      showToast(error.message, "error");
     }
-  }
+  };
 
   const openCreateModal = () => {
-    resetForm()
-    setSelectedTemplate(null)
-    setIsModalOpen(true)
-  }
+    resetForm();
+    setSelectedTemplate(null);
+    setIsModalOpen(true);
+  };
 
   const openEditModal = (template: Template) => {
-    setSelectedTemplate(template)
+    setSelectedTemplate(template);
     setFormData({
       nama_template: template.nama_template,
-      isi_template: template.isi_template
-    })
-    setIsModalOpen(true)
-  }
+      isi_template: template.isi_template,
+    });
+    setIsModalOpen(true);
+  };
 
   const openViewModal = (template: Template) => {
-    setSelectedTemplate(template)
-    setIsViewModalOpen(true)
-  }
+    setSelectedTemplate(template);
+    setIsViewModalOpen(true);
+  };
 
   const openDeleteDialog = (template: Template) => {
-    setSelectedTemplate(template)
-    setIsDeleteDialogOpen(true)
-  }
+    setSelectedTemplate(template);
+    setIsDeleteDialogOpen(true);
+  };
 
   const resetForm = () => {
-    setFormData({ nama_template: '', isi_template: '' })
-  }
+    setFormData({ nama_template: "", isi_template: "" });
+  };
 
-  const filteredTemplates = templates.filter(t =>
+  const filteredTemplates = templates.filter((t) =>
     t.nama_template.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  );
 
   if (loading) {
     return (
@@ -142,7 +154,7 @@ function TemplatePageContent() {
           <LoadingSpinner size="lg" text="Loading templates..." />
         </div>
       </AdminLayout>
-    )
+    );
   }
 
   return (
@@ -190,7 +202,9 @@ function TemplatePageContent() {
                       <FileText className="w-6 h-6 text-pink-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900">{template.nama_template}</h3>
+                      <h3 className="font-semibold text-gray-900">
+                        {template.nama_template}
+                      </h3>
                       <p className="text-xs text-gray-500 mt-1">
                         Digunakan {template._count?.tindak_lanjut || 0}x
                       </p>
@@ -250,12 +264,18 @@ function TemplatePageContent() {
         {selectedTemplate && (
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-gray-500">Nama Template</label>
-              <p className="text-lg font-semibold text-gray-900 mt-1">{selectedTemplate.nama_template}</p>
+              <label className="text-sm font-medium text-gray-500">
+                Nama Template
+              </label>
+              <p className="text-lg font-semibold text-gray-900 mt-1">
+                {selectedTemplate.nama_template}
+              </p>
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-500">Isi Template</label>
+              <label className="text-sm font-medium text-gray-500">
+                Isi Template
+              </label>
               <div className="mt-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <pre className="text-sm text-gray-900 whitespace-pre-wrap font-sans">
                   {selectedTemplate.isi_template}
@@ -265,7 +285,9 @@ function TemplatePageContent() {
 
             <div className="pt-4">
               <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                <span className="text-sm text-blue-700">Template ini telah digunakan</span>
+                <span className="text-sm text-blue-700">
+                  Template ini telah digunakan
+                </span>
                 <span className="text-lg font-bold text-blue-900">
                   {selectedTemplate._count?.tindak_lanjut || 0} kali
                 </span>
@@ -279,7 +301,7 @@ function TemplatePageContent() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={selectedTemplate ? 'Edit Template' : 'Tambah Template'}
+        title={selectedTemplate ? "Edit Template" : "Tambah Template"}
         size="lg"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -292,7 +314,9 @@ function TemplatePageContent() {
               required
               placeholder="e.g., Surat Panggilan Orang Tua"
               value={formData.nama_template}
-              onChange={(e) => setFormData({ ...formData, nama_template: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, nama_template: e.target.value })
+              }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
             />
           </div>
@@ -306,11 +330,14 @@ function TemplatePageContent() {
               rows={12}
               placeholder="Masukkan isi template surat..."
               value={formData.isi_template}
-              onChange={(e) => setFormData({ ...formData, isi_template: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, isi_template: e.target.value })
+              }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 font-mono text-sm"
             />
             <p className="text-xs text-gray-500 mt-2">
-              Tip: Gunakan placeholder seperti [NAMA_SISWA], [KELAS], [NAMA_GURU], dll.
+              Tip: Gunakan placeholder seperti [NAMA_SISWA], [KELAS],
+              [NAMA_GURU], dll.
             </p>
           </div>
 
@@ -327,7 +354,11 @@ function TemplatePageContent() {
               disabled={submitting}
               className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50"
             >
-              {submitting ? 'Saving...' : (selectedTemplate ? 'Update' : 'Create')}
+              {submitting
+                ? "Saving..."
+                : selectedTemplate
+                ? "Update"
+                : "Create"}
             </button>
           </div>
         </form>
@@ -345,7 +376,7 @@ function TemplatePageContent() {
         type="danger"
       />
     </AdminLayout>
-  )
+  );
 }
 
 export default function TemplatePage() {
@@ -353,5 +384,5 @@ export default function TemplatePage() {
     <ToastProvider>
       <TemplatePageContent />
     </ToastProvider>
-  )
+  );
 }
