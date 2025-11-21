@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, FileText, History, User } from 'lucide-react'
+import { useSession, signOut } from 'next-auth/react'
+import { Home, FileText, History, User, LogOut } from 'lucide-react'
 
 type MenuItem = {
   name: string
@@ -18,6 +19,7 @@ const menuItems: MenuItem[] = [
 
 export default function GuruSidebar() {
   const pathname = usePathname()
+  const { data: session } = useSession()
 
   return (
     <aside
@@ -58,9 +60,19 @@ export default function GuruSidebar() {
         </nav>
       </div>
 
-      <div className="px-6 py-4 text-xs" style={{ borderTop: '1px solid var(--color-sidebar-border)', color: 'var(--color-sidebar-foreground)' }}>
-        Logged in as <br />
-        <span className="font-semibold">Guru BK</span>
+      <div className="px-6 py-4 border-t" style={{ borderColor: 'var(--color-sidebar-border)' }}>
+        <div className="text-xs mb-3" style={{ color: 'var(--color-sidebar-foreground)' }}>
+          <p className="opacity-80">Logged in as</p>
+          <p className="font-semibold">{session?.user?.name || 'Guru'}</p>
+          <p className="text-xs opacity-70 capitalize">{session?.user?.role || 'guru'}</p>
+        </div>
+        <button
+          onClick={() => signOut({ redirect: true, callbackUrl: '/login' })}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm font-medium"
+        >
+          <LogOut className="w-4 h-4" />
+          Keluar
+        </button>
       </div>
     </aside>
   )

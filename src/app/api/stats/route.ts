@@ -1,8 +1,18 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { requireAuth } from '@/lib/auth-helpers'
 
 // GET dashboard statistics
 export async function GET() {
+  // Require authentication
+  const session = await requireAuth()
+  if (!session) {
+    return NextResponse.json(
+      { error: 'Unauthorized - Please login' },
+      { status: 401 }
+    )
+  }
+
   try {
     const [
       totalUsers,

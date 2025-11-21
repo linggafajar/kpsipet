@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Home, FileText, Users, GraduationCap, UserCheck, FileType, ChevronDown, ChevronRight } from "lucide-react";
+import { useSession, signOut } from "next-auth/react";
+import { Home, FileText, Users, GraduationCap, UserCheck, FileType, ChevronDown, ChevronRight, Smartphone, LogOut } from "lucide-react";
 
 type MenuItem = {
   name: string
@@ -25,10 +26,12 @@ const defaultMenu: MenuItem[] = [
       { name: "Template Surat", href: "/admin/template", Icon: FileType },
     ]
   },
+  { name: "WhatsApp Settings", href: "/admin/whatsapp-settings", Icon: Smartphone },
 ];
 
 export default function AdminSidebar({ menu = defaultMenu }: { menu?: MenuItem[] }) {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const [openMenus, setOpenMenus] = useState<string[]>(["Data Master"]);
 
   const toggleMenu = (name: string) => {
@@ -103,9 +106,19 @@ export default function AdminSidebar({ menu = defaultMenu }: { menu?: MenuItem[]
         </nav>
       </div>
 
-      <div className="px-6 py-4 text-xs" style={{ borderTop: `1px solid var(--color-sidebar-border)`, color: "var(--color-sidebar-foreground)" }}>
-        Logged in as <br />
-        <span className="font-semibold">Admin Sekolah</span>
+      <div className="px-6 py-4 border-t" style={{ borderColor: "var(--color-sidebar-border)" }}>
+        <div className="text-xs mb-3" style={{ color: "var(--color-sidebar-foreground)" }}>
+          <p className="opacity-80">Logged in as</p>
+          <p className="font-semibold">{session?.user?.name || "Admin"}</p>
+          <p className="text-xs opacity-70 capitalize">{session?.user?.role || "admin"}</p>
+        </div>
+        <button
+          onClick={() => signOut({ redirect: true, callbackUrl: "/login" })}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm font-medium"
+        >
+          <LogOut className="w-4 h-4" />
+          Keluar
+        </button>
       </div>
     </aside>
   );

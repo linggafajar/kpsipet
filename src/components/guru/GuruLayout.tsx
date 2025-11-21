@@ -1,12 +1,42 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSession, signOut } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import GuruSidebar from './GuruSidebar'
 import GuruHeader from './GuruHeader'
 import { Menu, X } from 'lucide-react'
 
 export default function GuruLayout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { data: session, status } = useSession()
+  const router = useRouter()
+
+  // Redirect if not authenticated or not guru/petugas
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login')
+    } else if (status === 'authenticated' && session?.user?.role !== 'guru' && session?.user?.role !== 'petugas') {
+      router.push('/login')
+    }
+  }, [status, session, router])
+
+  // Show loading while checking authentication
+  if (status === 'loading') {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Memuat...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Don't render if not authenticated or wrong role
+  if (status !== 'authenticated' || (session?.user?.role !== 'guru' && session?.user?.role !== 'petugas')) {
+    return null
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

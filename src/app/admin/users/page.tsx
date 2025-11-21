@@ -1,129 +1,183 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import AdminLayout from '@/app/components/admin/AdminLayout'
-import AdminHeader from '@/app/components/admin/AdminHeader'
-import Modal from '@/app/components/ui/Modal'
-import ConfirmDialog from '@/app/components/ui/ConfirmDialog'
-import LoadingSpinner from '@/app/components/ui/LoadingSpinner'
-import { ToastProvider, useToast } from '@/app/components/ui/ToastContainer'
-import { Plus, Pencil, Trash2, Search } from 'lucide-react'
+import { useEffect, useState } from "react";
+import AdminLayout from "@/components/admin/AdminLayout";
+import AdminHeader from "@/components/admin/AdminHeader";
+import Modal from "@/components/ui/Modal";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import FormInput from "@/components/ui/FormInput";
+import FormSelect from "@/components/ui/FormSelect";
+import { ToastProvider, useToast } from "@/components/ui/ToastContainer";
+import { Plus, Pencil, Trash2, Search, User as UserIcon, Lock, Shield } from "lucide-react";
 
 interface User {
-  id_user: number
-  username: string
-  role: 'admin' | 'petugas'
+  id_user: number;
+  username: string;
+  role: "admin" | "petugas";
   _count?: {
-    tindak_lanjut: number
-  }
+    tindak_lanjut: number;
+  };
+}
+
+interface FormErrors {
+  username?: string;
+  password?: string;
+  role?: string;
 }
 
 function UsersPageContent() {
-  const [users, setUsers] = useState<User[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [selectedUser, setSelectedUser] = useState<User | null>(null)
-  const [formData, setFormData] = useState({ username: '', password: '', role: 'admin' as 'admin' | 'petugas' })
-  const [submitting, setSubmitting] = useState(false)
-  const { showToast } = useToast()
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+    role: "admin" as "admin" | "petugas",
+  });
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [submitting, setSubmitting] = useState(false);
+  const { showToast } = useToast();
 
   useEffect(() => {
-    fetchUsers()
-  }, [])
+    fetchUsers();
+  }, []);
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('/api/users')
-      const data = await response.json()
-      setUsers(data)
+      const response = await fetch("/api/users");
+      const data = await response.json();
+      setUsers(data);
     } catch (error) {
-      showToast('Failed to fetch users', 'error')
+      showToast("Failed to fetch users", "error");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
+
+  const validateForm = (): boolean => {
+    const errors: FormErrors = {};
+
+    // Username validation
+    if (!formData.username.trim()) {
+      errors.username = "Username is required";
+    } else if (formData.username.length < 3) {
+      errors.username = "Username must be at least 3 characters";
+    } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
+      errors.username = "Username can only contain letters, numbers, and underscores";
+    }
+
+    // Password validation (only for new users or when changing password)
+    if (!selectedUser || formData.password) {
+      if (!formData.password) {
+        errors.password = "Password is required";
+      } else if (formData.password.length < 6) {
+        errors.password = "Password must be at least 6 characters";
+      }
+    }
+
+    // Role validation
+    if (!formData.role) {
+      errors.role = "Role is required";
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSubmitting(true)
+    e.preventDefault();
+
+    if (!validateForm()) {
+      showToast("Please fix the form errors", "error");
+      return;
+    }
+
+    setSubmitting(true);
 
     try {
-      const url = selectedUser ? `/api/users/${selectedUser.id_user}` : '/api/users'
-      const method = selectedUser ? 'PUT' : 'POST'
+      const url = selectedUser
+        ? `/api/users/${selectedUser.id_user}`
+        : "/api/users";
+      const method = selectedUser ? "PUT" : "POST";
 
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to save user')
+        throw new Error(data.error || "Failed to save user");
       }
 
       showToast(
-        selectedUser ? 'User updated successfully' : 'User created successfully',
-        'success'
-      )
-      setIsModalOpen(false)
-      fetchUsers()
-      resetForm()
+        selectedUser
+          ? "User updated successfully"
+          : "User created successfully",
+        "success"
+      );
+      setIsModalOpen(false);
+      fetchUsers();
+      resetForm();
     } catch (error: any) {
-      showToast(error.message, 'error')
+      showToast(error.message, "error");
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   const handleDelete = async () => {
-    if (!selectedUser) return
+    if (!selectedUser) return;
 
     try {
       const response = await fetch(`/api/users/${selectedUser.id_user}`, {
-        method: 'DELETE'
-      })
+        method: "DELETE",
+      });
 
       if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to delete user')
+        const data = await response.json();
+        throw new Error(data.error || "Failed to delete user");
       }
 
-      showToast('User deleted successfully', 'success')
-      fetchUsers()
-      setSelectedUser(null)
+      showToast("User deleted successfully", "success");
+      fetchUsers();
+      setSelectedUser(null);
     } catch (error: any) {
-      showToast(error.message, 'error')
+      showToast(error.message, "error");
     }
-  }
+  };
 
   const openCreateModal = () => {
-    resetForm()
-    setSelectedUser(null)
-    setIsModalOpen(true)
-  }
+    resetForm();
+    setSelectedUser(null);
+    setIsModalOpen(true);
+  };
 
   const openEditModal = (user: User) => {
-    setSelectedUser(user)
-    setFormData({ username: user.username, password: '', role: user.role })
-    setIsModalOpen(true)
-  }
+    setSelectedUser(user);
+    setFormData({ username: user.username, password: "", role: user.role });
+    setIsModalOpen(true);
+  };
 
   const openDeleteDialog = (user: User) => {
-    setSelectedUser(user)
-    setIsDeleteDialogOpen(true)
-  }
+    setSelectedUser(user);
+    setIsDeleteDialogOpen(true);
+  };
 
   const resetForm = () => {
-    setFormData({ username: '', password: '', role: 'admin' })
-  }
+    setFormData({ username: "", password: "", role: "admin" });
+    setFormErrors({});
+  };
 
-  const filteredUsers = users.filter(user =>
+  const filteredUsers = users.filter((user) =>
     user.username.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  );
 
   if (loading) {
     return (
@@ -132,7 +186,7 @@ function UsersPageContent() {
           <LoadingSpinner size="lg" text="Loading users..." />
         </div>
       </AdminLayout>
-    )
+    );
   }
 
   return (
@@ -198,11 +252,13 @@ function UsersPageContent() {
                     {user.username}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      user.role === 'admin'
-                        ? 'bg-purple-100 text-purple-800'
-                        : 'bg-blue-100 text-blue-800'
-                    }`}>
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        user.role === "admin"
+                          ? "bg-purple-100 text-purple-800"
+                          : "bg-blue-100 text-blue-800"
+                      }`}
+                    >
                       {user.role}
                     </span>
                   </td>
@@ -244,64 +300,116 @@ function UsersPageContent() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={selectedUser ? 'Edit Pengguna' : 'Tambah Pengguna'}
+        title={selectedUser ? "Edit Pengguna" : "Tambah Pengguna Baru"}
+        size="md"
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Username
-            </label>
-            <input
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Info Banner */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <Shield className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-blue-800">
+                <p className="font-medium mb-1">User Account Information</p>
+                <p className="text-blue-600">
+                  {selectedUser
+                    ? "Update user account details. Leave password blank to keep the current password."
+                    : "Create a new user account for the complaint management system."
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Username Field */}
+          <div className="relative">
+            <FormInput
+              label="Username"
               type="text"
               required
               value={formData.username}
-              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => {
+                setFormData({ ...formData, username: e.target.value });
+                setFormErrors({ ...formErrors, username: undefined });
+              }}
+              error={formErrors.username}
+              helperText="3-20 characters, letters, numbers, and underscores only"
+              placeholder="e.g., admin_sekolah"
+              maxLength={20}
             />
+            <UserIcon className="absolute right-4 top-10 w-5 h-5 text-gray-400" />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password {selectedUser && '(leave blank to keep current)'}
-            </label>
-            <input
+          {/* Password Field */}
+          <div className="relative">
+            <FormInput
+              label={selectedUser ? "Password (Optional)" : "Password"}
               type="password"
               required={!selectedUser}
               value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => {
+                setFormData({ ...formData, password: e.target.value });
+                setFormErrors({ ...formErrors, password: undefined });
+              }}
+              error={formErrors.password}
+              helperText={
+                selectedUser
+                  ? "Leave blank to keep current password"
+                  : "Minimum 6 characters"
+              }
+              placeholder="Enter secure password"
+              minLength={6}
             />
+            <Lock className="absolute right-4 top-10 w-5 h-5 text-gray-400" />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Role
-            </label>
-            <select
-              required
-              value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value as 'admin' | 'petugas' })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="admin">Admin</option>
-              <option value="petugas">Petugas</option>
-            </select>
-          </div>
+          {/* Role Field */}
+          <FormSelect
+            label="Role"
+            required
+            value={formData.role}
+            onChange={(e) => {
+              setFormData({
+                ...formData,
+                role: e.target.value as "admin" | "petugas",
+              });
+              setFormErrors({ ...formErrors, role: undefined });
+            }}
+            error={formErrors.role}
+            helperText="Select the user's role in the system"
+            options={[
+              { value: "admin", label: "Admin - Full system access" },
+              { value: "petugas", label: "Petugas - Staff member" },
+            ]}
+          />
 
-          <div className="flex gap-3 justify-end pt-4">
+          {/* Form Actions */}
+          <div className="flex gap-3 justify-end pt-4 border-t border-gray-200">
             <button
               type="button"
-              onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              onClick={() => {
+                setIsModalOpen(false);
+                resetForm();
+              }}
+              className="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {submitting ? 'Saving...' : (selectedUser ? 'Update' : 'Create')}
+              {submitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4" />
+                  <span>{selectedUser ? "Update User" : "Create User"}</span>
+                </>
+              )}
             </button>
           </div>
         </form>
@@ -319,7 +427,7 @@ function UsersPageContent() {
         type="danger"
       />
     </AdminLayout>
-  )
+  );
 }
 
 export default function UsersPage() {
@@ -327,5 +435,5 @@ export default function UsersPage() {
     <ToastProvider>
       <UsersPageContent />
     </ToastProvider>
-  )
+  );
 }

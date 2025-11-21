@@ -5,11 +5,12 @@ import { Menu } from "lucide-react";
 
 type AdminHeaderProps = {
   title?: string;
-  actions?: React.ReactNode;
+  subtitle?: string;
+  action?: React.ReactNode;
   onToggle?: () => void;
 };
 
-export default function AdminHeader({ title = "Admin", actions, onToggle }: AdminHeaderProps) {
+export default function AdminHeader({ title = "Admin", subtitle, action, onToggle }: AdminHeaderProps) {
   return (
     <header
       className="flex items-center justify-between p-4 rounded-md mb-6"
@@ -27,11 +28,11 @@ export default function AdminHeader({ title = "Admin", actions, onToggle }: Admi
 
         <div>
           <h2 className="text-lg font-semibold">{title}</h2>
-          <p className="text-sm opacity-90">Panel administrasi — kelola data aplikasi</p>
+          <p className="text-sm opacity-90">{subtitle || "Panel administrasi — kelola data aplikasi"}</p>
         </div>
       </div>
 
-      <div>{actions}</div>
+      <div>{action}</div>
     </header>
   );
 }
