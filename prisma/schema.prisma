@@ -1,0 +1,97 @@
+//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
+
+datasource db {
+  provider = "postgresql"   // sesuaikan jika pakai PostgreSQL
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  admin
+  petugas
+}
+
+enum StatusLaporan {
+  Menunggu
+  Disetujui
+  Ditolak
+  Selesai
+}
+
+model Users {
+  id_user Int     @id @default(autoincrement())
+  username String @unique
+  password String
+  role     Role
+
+  // relasi
+  tindak_lanjut TindakLanjut[]
+}
+
+model Guru {
+  id_guru   Int    @id @default(autoincrement())
+  nip       String @unique
+  nama_guru String
+  no_telp   String?
+
+  // relasi
+  pengaduan Pengaduan[]
+}
+
+model Siswa {
+  id_siswa    Int    @id @default(autoincrement())
+  nisn        String @unique
+  nama_siswa  String
+  kelas       String
+  kontak_ortu String
+
+  // relasi
+  pengaduan Pengaduan[]
+}
+
+model TemplateSurat {
+  id_template   Int    @id @default(autoincrement())
+  nama_template String
+  isi_template  String
+
+  // relasi
+  tindak_lanjut TindakLanjut[]
+}
+
+model Pengaduan {
+  id_pengaduan     Int           @id @default(autoincrement())
+  tgl_pengaduan    DateTime
+  deskripsi_masalah String
+  status_laporan   StatusLaporan
+  alasan_penolakan String?
+
+  // Foreign Keys
+  id_guru  Int
+  id_siswa Int
+
+  // Relasi
+  guru   Guru  @relation(fields: [id_guru], references: [id_guru])
+  siswa  Siswa @relation(fields: [id_siswa], references: [id_siswa])
+  tindak_lanjut TindakLanjut?
+
+}
+
+model TindakLanjut {
+  id_tindak_lanjut Int       @id @default(autoincrement())
+  tgl_proses       DateTime
+  file_surat       String
+  catatan_admin    String
+
+  // Foreign Keys
+  id_pengaduan Int @unique
+  id_user      Int
+  id_template  Int
+
+  // Relasi
+  pengaduan Pengaduan   @relation(fields: [id_pengaduan], references: [id_pengaduan])
+  user      Users       @relation(fields: [id_user], references: [id_user])
+  template  TemplateSurat @relation(fields: [id_template], references: [id_template])
+}
